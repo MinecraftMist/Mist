@@ -1,6 +1,7 @@
 package com.destroystokyo.paper.config;
 
 import com.destroystokyo.paper.PaperCommand;
+import com.destroystokyo.paper.io.chunk.ChunkTaskManager;
 import com.google.common.base.Throwables;
 
 import java.io.File;
@@ -252,6 +253,7 @@ public class PaperConfig {
         if (!asyncChunks) {
             log("Async Chunks: Disabled - Chunks will be managed synchronously, and will cause tremendous lag.");
         } else {
+            ChunkTaskManager.initGlobalLoadThreads(threads);
             log("Async Chunks: Enabled - Chunks will be loaded much faster, without lag.");
         }
     }

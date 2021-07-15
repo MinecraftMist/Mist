@@ -345,14 +345,13 @@ public class CraftWorld implements World {
 
     @Override
     public boolean isChunkLoaded(int x, int z) {
-        net.minecraft.world.chunk.Chunk chunk = world.getChunkSource().getChunk(x,z, false);
-        return chunk != null;
+        return this.world.getChunkSource().getChunkAtIfLoadedImmediately(x, z) != null; // Paper
     }
 
     @Override
     public boolean isChunkGenerated(int x, int z) {
         try {
-            return isChunkLoaded(x, z) || world.getChunkSource().chunkMap.read(new ChunkPos(x, z)) != null;
+            return this.world.getChunkSource().getChunkAtIfCachedImmediately(x, z) != null || this.world.getChunkSource().chunkMap.read(new ChunkPos(x, z)) != null; // Paper (TODO check if the first part can be removed)
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -1874,15 +1873,21 @@ public class CraftWorld implements World {
 
     @Override
     public void setKeepSpawnInMemory(boolean keepLoaded) {
+        // Paper start - Configurable spawn radius
+        if (keepLoaded == world.keepSpawnInMemory) {
+            // do nothing, nothing has changed
+            return;
+        }
         world.keepSpawnInMemory = keepLoaded;
         // Grab the worlds spawn chunk
-        BlockPos chunkcoordinates = this.world.getSharedSpawnPos();
+        BlockPos prevSpawn = this.world.getSharedSpawnPos();
         if (keepLoaded) {
-            world.getChunkSource().addRegionTicket(TicketType.START, new ChunkPos(chunkcoordinates), 11, Unit.INSTANCE);
+            world.addTicketsForSpawn(world.paperConfig.keepLoadedRange, prevSpawn);
         } else {
-            // TODO: doesn't work well if spawn changed....
-            world.getChunkSource().addRegionTicket(TicketType.START, new ChunkPos(chunkcoordinates), 11, Unit.INSTANCE);
+            // TODO: doesn't work well if spawn changed.... // paper - resolved
+            world.removeTicketsForSpawn(world.paperConfig.keepLoadedRange, prevSpawn);
         }
+        // Paper end
     }
 
     @Override
@@ -2350,6 +2355,35 @@ public class CraftWorld implements World {
     public DragonBattle getEnderDragonBattle() {
         return (getHandle().dragonFight() == null) ? null : new CraftDragonBattle(getHandle().dragonFight());
     }
+
+    // Paper start
+    @Override
+    public java.util.concurrent.CompletableFuture<Chunk> getChunkAtAsync(int x, int z, boolean gen, boolean urgent) {
+        if (Bukkit.isPrimaryThread()) {
+            net.minecraft.world.chunk.Chunk immediate = this.world.getChunkSource().getChunkAtIfLoadedImmediately(x, z);
+            if (immediate != null) {
+                return java.util.concurrent.CompletableFuture.completedFuture(immediate.getBukkitChunk());
+            }
+        } else {
+            java.util.concurrent.CompletableFuture<Chunk> future = new java.util.concurrent.CompletableFuture<Chunk>();
+            world.getServer().execute(() -> {
+                getChunkAtAsync(x, z, gen, urgent).whenComplete((chunk, err) -> {
+                    if (err != null) {
+                        future.completeExceptionally(err);
+                    } else {
+                        future.complete(chunk);
+                    }
+                });
+            });
+            return future;
+        }
+
+        return this.world.getChunkSource().getChunkAtAsynchronously(x, z, gen, urgent).thenComposeAsync((either) -> {
+            net.minecraft.world.chunk.Chunk chunk = (net.minecraft.world.chunk.Chunk) either.left().orElse(null);
+            return java.util.concurrent.CompletableFuture.completedFuture(chunk == null ? null : chunk.getBukkitChunk());
+        }, net.minecraft.server.MinecraftServer.getServer());
+    }
+    // Paper end
 
     // Mohist - start
     public TileEntity getTileEntityAt(int x, int y, int z) {
