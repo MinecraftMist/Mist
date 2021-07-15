@@ -329,7 +329,7 @@ project(':forge') {
                 'Specification-Vendor'  : 'MohistMC',
                 'Specification-Version':  project.version.substring(MC_VERSION.length() + 1),
                 'Implementation-Title'  : 'Mohist',
-                'Implementation-Version': '1.16.5-' + JenkinsNumber(),
+                'Implementation-Version': '1.16.5-' + NextBuildNumber(),
                 'Implementation-Vendor' : 'MohistMC'
             ] as LinkedHashMap,
             'org/bukkit/craftbukkit/v1_16_R3/': [
@@ -725,7 +725,7 @@ project(':forge') {
             MANIFESTS.each{ pkg, values ->
                 if (pkg == '/') {
                     manifest.attributes(values += [
-                            'Manifest-Version': JenkinsNumber()
+                            'Manifest-Version': NextBuildNumber()
                     ])
                 } else {
                     manifest.attributes(values, pkg)
@@ -806,8 +806,8 @@ project(':forge') {
     task mohistJar(type: Jar, dependsOn: [genServerBinPatches, 'signUniversalJar']) {
         classifier = 'server'
         extension = 'jar'
-        baseName = 'mohist'
-        version = "1.16.5-"+JenkinsNumber()
+        baseName = 'mist'
+        version = "1.16.5-"+NextBuildNumber()
         destinationDir = file('build/libs')
         from sourceSets.fmllauncher.output
         doFirst {
@@ -997,17 +997,16 @@ task setup() {
     dependsOn ':forge:extractMapped' //These must be strings so that we can do lazy resolution. Else we need evaluationDependsOnChildren above
 }
 
-def JenkinsNumber() {
+def NextBuildNumber() {
     try {
-        def conn = new URL("https://ci.codemc.io/job/MohistMC/job/Mohist-1.16.5/api/json").openConnection()
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0")
+        def conn = new URL("https://api.github.com/repos/MinecraftMist/Mist/actions/runs?status=success&branch=1.16.5").openConnection()
+        conn.setRequestProperty("Accept", "application/vnd.github.v3+json")
         conn.connect()
         def root = conn.content.text
         def jsonSluper = new JsonSlurper()
 
-        String data = jsonSluper.parseText(root)
-        def number = data.substring(data.indexOf("number")).split(",")
-        return Integer.valueOf(number[0].replace("number=", "")).intValue()
+        def data = jsonSluper.parseText(root)
+        return Integer.valueOf(data.total_count).intValue() + 1
     } catch (Exception e1) {
         return 'dev-' + grgit.head().abbreviatedId
     }

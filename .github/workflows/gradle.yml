@@ -6,13 +6,12 @@ name: 1.16.5 CI with Gradle
 on:
   push:
     branches: [ 1.16.5 ]
-  pull_request:
-    branches: [ 1.16.5 ]
 
 jobs:
   build:
 
     runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, '[CI-SKIP]')"
 
     steps:
     - uses: actions/checkout@v1
@@ -24,3 +23,17 @@ jobs:
       run: |
         chmod +x ./gradlew
         ./gradlew setup
+        ./gradlew mohistJar
+    - name: Detect & Set Build number
+      run: |
+        chmod +x ./buildnum.sh
+        BUILDNUM=$(( $( ./buildnum.sh 1.16.5 ) + 1 ))
+        echo "buildnum=$BUILDNUM" >> $GITHUB_ENV
+    - name: Deploy to Github Releases
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "projects/mohist/build/libs/*server.jar"
+        commit: "1.16.5"
+        tag: "1.16.5-${{ env.buildnum }}"
+        name: "Build 1.16.5-${{ env.buildnum }}"
+        token: ${{ secrets.GITHUB_TOKEN }}
