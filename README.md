@@ -2,7 +2,7 @@
 
 Hybrid server software for Minecraft, allowing Forge mods and Bukkit plugins to run together. Rogue fork of **[Mohist](https://github.com/MohistMC/Mohist)**.
 
-New builds can be downloaded from **[Releases](https://github.com/MistMC/Mist/releases)** tab.
+New builds can be downloaded from **[Releases](https://github.com/MinecraftMist/Mist/releases)** tab.
 
 About
 -
