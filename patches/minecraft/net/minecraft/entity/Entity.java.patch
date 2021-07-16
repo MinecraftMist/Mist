@@ -69,7 +69,7 @@
  import net.minecraft.entity.player.PlayerEntity;
  import net.minecraft.entity.player.ServerPlayerEntity;
  import net.minecraft.fluid.Fluid;
-@@ -106,2709 +_,3345 @@
+@@ -106,2709 +_,3361 @@
  import net.minecraft.world.server.TicketType;
  import net.minecraftforge.api.distmarker.Dist;
  import net.minecraftforge.api.distmarker.OnlyIn;
@@ -951,17 +951,33 @@
 +                this.field_70170_p.getCBServer().getPluginManager().callEvent(combustEvent);
 +                if (!combustEvent.isCancelled()) {
 +                    this.setFire(combustEvent.getDuration(), false);
++                    // Mist start - Fix Infernal Expansion startup
++                    this.skipFireCall = true;
++                    this.func_70015_d(0);
++                    this.skipFireCall = false;
++                    // Mist end
 +                }
 +            } else {
 +                // This will be called every single tick the entity is in lava, so don't throw an event
 +                this.setFire(15, false);
++                // Mist start - Fix Infernal Expansion startup
++                this.skipFireCall = true;
++                this.func_70015_d(0);
++                this.skipFireCall = false;
++                // Mist end
 +            }
 +            // CraftBukkit end - we also don't throw an event unless the object in lava is living, to save on some event calls
 +            this.func_70097_a(DamageSource.field_76371_c, 4.0F);
 +        }
 +    }
 +
++    // Mist start - Fix Infernal Expansion startup
++    private boolean skipFireCall;
 +    public void func_70015_d(int p_70015_1_) {
++        if (this.skipFireCall) {
++            return;
++        }
++        // Mist end
 +        // CraftBukkit start
 +        this.setFire(p_70015_1_, true);
 +    }
