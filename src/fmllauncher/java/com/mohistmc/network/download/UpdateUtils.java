@@ -32,18 +32,17 @@ public class UpdateUtils {
         System.out.println(i18n.get("update.stopcheck"));
 
         try {
-            JsonElement root = new JsonParser().parse(new InputStreamReader(getInput("https://ci.codemc.io/job/MohistMC/job/Mohist-1.16.5/lastSuccessfulBuild/api/json")));
+            JsonElement root = new JsonParser().parse(new InputStreamReader(getInput("https://api.github.com/repos/MinecraftMist/Mist/actions/runs?status=success&branch=1.16.5")));
 
             String jar_sha = MohistMCStart.getVersion();
-            String build_number = "1.16.5-" + root.getAsJsonObject().get("number").toString();
-            String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(Long.parseLong(root.getAsJsonObject().get("timestamp").toString())));
+            String build_number = "1.16.5-" + root.getAsJsonObject().get("total_count").toString();
 
             if (jar_sha.equals(build_number))
                 System.out.println(i18n.get("update.latest", "1.0", jar_sha, build_number));
             else {
-                System.out.println(i18n.get("update.detect", build_number, jar_sha, time));
+                System.out.println(i18n.get("update.detect", build_number, jar_sha));
                 if (bMohist("check_update_auto_download", "false")) {
-                    downloadFile("https://ci.codemc.io/job/MohistMC/job/Mohist-1.16.5/lastSuccessfulBuild/artifact/projects/mohist/build/libs/mohist-" + build_number + "-server.jar", JarTool.getFile());
+                    downloadFile("https://github.com/MinecraftMist/Mist/releases/download/" + build_number + "/mist-" + build_number + "-server.jar", JarTool.getFile());
                     restartServer(new ArrayList<>(Arrays.asList("java", "-jar", JarTool.getJarName())), true);
                 }
             }
