@@ -28,7 +28,7 @@
  import net.minecraft.fluid.Fluid;
  import net.minecraft.fluid.FluidState;
  import net.minecraft.fluid.Fluids;
-@@ -52,747 +_,1097 @@
+@@ -52,747 +_,1103 @@
  import net.minecraft.world.gen.feature.structure.StructureStart;
  import net.minecraft.world.lighting.WorldLightManager;
  import net.minecraft.world.server.ChunkHolder;
@@ -1187,7 +1187,13 @@
 +    }
 +
 +    public int func_201576_a(Heightmap.Type p_201576_1_, int p_201576_2_, int p_201576_3_) {
-+        return this.field_76634_f.get(p_201576_1_).func_202273_a(p_201576_2_ & 15, p_201576_3_ & 15) - 1;
++        // Mist start - Workaround BYG packet processing error
++        Heightmap hmap = this.field_76634_f.get(p_201576_1_);
++        if (hmap == null) {
++            return 128;
++        }
++        return hmap.func_202273_a(p_201576_2_ & 15, p_201576_3_ & 15) - 1;
++        // Mist end
 +    }
 +
 +    @Nullable
