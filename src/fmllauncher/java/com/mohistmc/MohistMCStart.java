@@ -24,15 +24,14 @@ public class MohistMCStart {
         MohistConfigUtil.copyMohistConfig();
         CustomFlagsHandler.handleCustomArgs();
 
-        if (MohistConfigUtil.bMohist("show_logo", "true"))
-            System.out.println("\n" + "\n" +
-                    " __    __   ______   __  __   __   ______   ______  \n" +
-                    "/\\ \"-./  \\ /\\  __ \\ /\\ \\_\\ \\ /\\ \\ /\\  ___\\ /\\__  _\\ \n" +
-                    "\\ \\ \\-./\\ \\\\ \\ \\/\\ \\\\ \\  __ \\\\ \\ \\\\ \\___  \\\\/_/\\ \\/ \n" +
-                    " \\ \\_\\ \\ \\_\\\\ \\_____\\\\ \\_\\ \\_\\\\ \\_\\\\/\\_____\\  \\ \\_\\ \n" +
-                    "  \\/_/  \\/_/ \\/_____/ \\/_/\\/_/ \\/_/ \\/_____/   \\/_/ \n" +
-                    "                                                    \n" + "\n" +
-                    "                                      " + i18n.get("mohist.launch.welcomemessage"));
+        if (MohistConfigUtil.bMohist("show_logo", "true")) {
+            System.out.println("\n\n __    __   __   ______   ______ ");
+            System.out.println("/\\ \"-./  \\ /\\ \\ /\\  ___\\ /\\__  _\\");
+            System.out.println("\\ \\ \\-./\\ \\\\ \\ \\\\ \\___  \\\\/_/\\ \\/");
+            System.out.println(" \\ \\_\\ \\ \\_\\\\ \\_\\\\/\\_____\\  \\ \\_\\");
+            System.out.println("  \\/_/  \\/_/ \\/_/ \\/_____/   \\/_/");
+            System.out.println("\n\n                                      " + i18n.get("mohist.launch.welcomemessage"));
+        }
         if (MohistConfigUtil.bMohist("check_libraries", "true")) {
             DefaultLibraries.run();
             startInstallation();

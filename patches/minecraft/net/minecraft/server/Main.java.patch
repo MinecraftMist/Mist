@@ -39,7 +39,7 @@
  import net.minecraft.util.Util;
  import net.minecraft.util.WorldOptimizer;
  import net.minecraft.util.datafix.DataFixesManager;
-@@ -53,159 +_,245 @@
+@@ -53,159 +_,246 @@
  import org.apache.logging.log4j.Logger;
  
  public class Main {
@@ -267,6 +267,7 @@
 +            try {
 +                datapackregistries = completablefuture.get();
 +            } catch (Exception exception) {
++                exception.printStackTrace(); // Mist - Verbose datapack errors
 +                field_240759_a_.warn(com.mohistmc.util.i18n.i18n.get("main.4", (Throwable) exception));
 +                resourcepacklist.close();
 +                return;
