@@ -1,6 +1,6 @@
 ---
 name: Question
-about: Ask something related to Mohist here :)
+about: Ask something related to Mist here :)
 title: ''
 labels: question
 assignees: ''

@@ -19,7 +19,7 @@ assignees: ''
 
 **Minecraft Version :** Minecraft version
 
-**Mohist Version :** Provide Mohist build number
+**Mist Version :** Provide Mist build number
 
 **Operating System :** Provide the name of your OS
 
