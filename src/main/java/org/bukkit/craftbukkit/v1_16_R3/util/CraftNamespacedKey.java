@@ -17,14 +17,17 @@ public final class CraftNamespacedKey {
     }
 
     public static NamespacedKey fromString(String string) {
+        if (string == null) return null; // Mist - Guard against NPE in CraftNamespacedKey
         return fromMinecraft(new ResourceLocation(string));
     }
 
     public static NamespacedKey fromMinecraft(ResourceLocation minecraft) {
+        if (minecraft == null) return null; // Mist - Guard against NPE in CraftNamespacedKey
         return new NamespacedKey(minecraft.getNamespace(), minecraft.getPath());
     }
 
     public static ResourceLocation toMinecraft(NamespacedKey key) {
+        if (key == null) return null; // Mist - Guard against NPE in CraftNamespacedKey
         return new ResourceLocation(key.getNamespace(), key.getKey());
     }
 }
