@@ -391,7 +391,7 @@
 +        return p_217405_0_ < 0 || p_217405_0_ >= 256;
 +    }
 +
-+    public final Chunk func_175726_f(BlockPos p_175726_1_) { // Paper - help inline
++    public Chunk func_175726_f(BlockPos p_175726_1_) { // Paper - help inline // Mist - Remove final to make DoubleSlabs compatible
 +        return this.func_212866_a_(p_175726_1_.func_177958_n() >> 4, p_175726_1_.func_177952_p() >> 4);
 +    }
 +
@@ -400,7 +400,7 @@
 +        return this.func_212866_a_(chunkX, chunkZ);
 +    }
 +
-+    public final Chunk func_212866_a_(int p_212866_1_, int p_212866_2_) { // Paper - final to help inline
++    public Chunk func_212866_a_(int p_212866_1_, int p_212866_2_) { // Paper - final to help inline // Mist - Remove final to make DoubleSlabs compatible
 +        return (Chunk) this.func_217353_a(p_212866_1_, p_212866_2_, ChunkStatus.field_222617_m, true); // Paper - avoid a method jump
 +    }
 +
