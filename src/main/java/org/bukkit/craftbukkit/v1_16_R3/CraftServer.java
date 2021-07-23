@@ -458,7 +458,7 @@ public final class CraftServer implements Server {
             String label = entry.getKey();
             Command command = entry.getValue();
 
-            if (command instanceof VanillaCommandWrapper) {
+            if (command instanceof VanillaCommandWrapper && ((VanillaCommandWrapper) command).vanillaCommand instanceof LiteralCommandNode) { // Mist - Introduce instanceof check to fix /reload
                 LiteralCommandNode<CommandSource> node = (LiteralCommandNode<CommandSource>) ((VanillaCommandWrapper) command).vanillaCommand;
                 if (!node.getLiteral().equals(label)) {
                     LiteralCommandNode<CommandSource> clone = new LiteralCommandNode(label, node.getCommand(), node.getRequirement(), node.getRedirect(), node.getRedirectModifier(), node.isFork());
