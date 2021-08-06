@@ -85,7 +85,7 @@
 +            }
 +         }
 +         if (rem) {
-+            if (remUnk) {
++            if (remUnk && TicketType.UNLOAD_DELAY.func_223184_b() > 0) { // Mist - Disable chunk unload delay if <= 0
 +               entry.getValue().func_226175_a_(new Ticket<ChunkPos>(TicketType.UNLOAD_DELAY, 33, new ChunkPos(entry.getLongKey()), false)).func_229861_a_(this.field_219389_q);
 +            }
              this.field_219378_f.func_215491_b(entry.getLongKey(), func_229844_a_(entry.getValue()), false);
@@ -148,7 +148,7 @@
        }
  
 +      // Mohist start - Introduce 'chunk_unload_delay' option
-+      if (p_219349_3_.func_219479_a() == TicketType.field_219490_c) {
++      if (p_219349_3_.func_219479_a() == TicketType.field_219490_c && TicketType.UNLOAD_DELAY.func_223184_b() > 0) { // Mist - Disable chunk unload delay if <= 0
 +         sortedarrayset.func_226175_a_(new Ticket<ChunkPos>(TicketType.UNLOAD_DELAY, 33, new ChunkPos(p_219349_1_), false)).func_229861_a_(this.field_219389_q);
 +      }
 +      // Mohist end
