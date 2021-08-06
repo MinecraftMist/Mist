@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/dedicated/ServerProperties.java
++++ b/net/minecraft/server/dedicated/ServerProperties.java
+@@ -16,7 +_,7 @@
+    public final boolean field_219010_d = this.func_218982_a("spawn-animals", true);
+    public final boolean field_219011_e = this.func_218982_a("spawn-npcs", true);
+    public final boolean field_219012_f = this.func_218982_a("pvp", true);
+-   public final boolean field_219013_g = this.func_218982_a("allow-flight", false);
++   public final boolean field_219013_g = this.func_218982_a("allow-flight", true); // Mist - Make allow-flight true by default
+    public final String field_219014_h = this.func_218973_a("resource-pack", "");
+    public final String field_219015_i = this.func_218973_a("motd", "A Minecraft Server");
+    public final boolean field_219016_j = this.func_218982_a("force-gamemode", false);
