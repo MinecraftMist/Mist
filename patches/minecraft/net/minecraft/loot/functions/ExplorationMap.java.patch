@@ -1,0 +1,20 @@
+--- a/net/minecraft/loot/functions/ExplorationMap.java
++++ b/net/minecraft/loot/functions/ExplorationMap.java
+@@ -60,7 +_,16 @@
+          Vector3d vector3d = p_215859_2_.func_216031_c(LootParameters.field_237457_g_);
+          if (vector3d != null) {
+             ServerWorld serverworld = p_215859_2_.func_202879_g();
+-            BlockPos blockpos = serverworld.func_241117_a_(this.field_204318_b, new BlockPos(vector3d), this.field_204321_e, this.field_212428_f);
++            // Paper start
++            if (!serverworld.paperConfig.enableTreasureMaps) {
++               /*
++                * NOTE: I fear users will just get a plain map as their "treasure"
++                * This is preferable to disrespecting the config.
++                */
++               return p_215859_1_;
++            }
++            // Paper end
++            BlockPos blockpos = serverworld.func_241117_a_(this.field_204318_b, new BlockPos(vector3d), this.field_204321_e, !serverworld.paperConfig.treasureMapsAlreadyDiscovered && this.field_212428_f); // Paper
+             if (blockpos != null) {
+                ItemStack itemstack = FilledMapItem.func_195952_a(serverworld, blockpos.func_177958_n(), blockpos.func_177952_p(), this.field_204320_d, true, true);
+                FilledMapItem.func_226642_a_(serverworld, itemstack);

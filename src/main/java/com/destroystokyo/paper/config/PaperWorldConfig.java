@@ -90,4 +90,14 @@ public class PaperWorldConfig {
     private void maxAutoSaveChunksPerTick() {
         maxAutoSaveChunksPerTick = getInt("max-auto-save-chunks-per-tick", 24);
     }
+
+    public boolean enableTreasureMaps = true;
+    public boolean treasureMapsAlreadyDiscovered = false;
+    private void treasureMapsAlreadyDiscovered() {
+        enableTreasureMaps = getBoolean("enable-treasure-maps", true);
+        treasureMapsAlreadyDiscovered = getBoolean("treasure-maps-return-already-discovered", false);
+        if (treasureMapsAlreadyDiscovered) {
+            log("Treasure Maps will return already discovered locations");
+        }
+    }
 }

@@ -1,0 +1,12 @@
+--- a/net/minecraft/entity/merchant/villager/VillagerTrades.java
++++ b/net/minecraft/entity/merchant/villager/VillagerTrades.java
+@@ -152,7 +_,8 @@
+             return null;
+          } else {
+             ServerWorld serverworld = (ServerWorld)p_221182_1_.field_70170_p;
+-            BlockPos blockpos = serverworld.func_241117_a_(this.field_221228_b, p_221182_1_.func_233580_cy_(), 100, true);
++            if (!serverworld.paperConfig.enableTreasureMaps) return null; // Paper
++            BlockPos blockpos = serverworld.func_241117_a_(this.field_221228_b, p_221182_1_.func_233580_cy_(), 100, !serverworld.paperConfig.treasureMapsAlreadyDiscovered); // Paper
+             if (blockpos != null) {
+                ItemStack itemstack = FilledMapItem.func_195952_a(serverworld, blockpos.func_177958_n(), blockpos.func_177952_p(), (byte)2, true, true);
+                FilledMapItem.func_226642_a_(serverworld, itemstack);
