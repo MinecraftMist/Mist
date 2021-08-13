@@ -42,6 +42,14 @@
                 return null;
              }
           }
+@@ -158,6 +_,7 @@
+                   int k1 = j + i * i1;
+                   int l1 = k + i * j1;
+                   ChunkPos chunkpos = this.func_236392_a_(p_236388_8_, p_236388_6_, sharedseedrandom, k1, l1);
++                  if (!p_236388_1_.func_175723_af().func_177730_a(chunkpos)) continue; // Paper
+                   IChunk ichunk = p_236388_1_.func_217348_a(chunkpos.field_77276_a, chunkpos.field_77275_b, ChunkStatus.field_222606_b);
+                   StructureStart<?> structurestart = p_236388_2_.func_235013_a_(SectionPos.func_218156_a(ichunk.func_76632_l(), 0), this, ichunk);
+                   if (structurestart != null && structurestart.func_75069_d()) {
 @@ -237,11 +_,16 @@
     }
  
