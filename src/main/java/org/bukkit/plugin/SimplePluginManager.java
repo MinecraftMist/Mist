@@ -23,6 +23,8 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.mohistmc.configuration.MohistConfig;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -569,6 +571,11 @@ public final class SimplePluginManager implements PluginManager {
             }
             fireEvent(event);
         } else {
+            // Mist start - Option to disable sync events in non-primary threads (experimental)
+            if (MohistConfig.instance.nosynceventsfromasyncthreads.getValue() && !server.isPrimaryThread()) {
+                throw new IllegalStateException(event.getEventName() + " cannot be triggered synchronously from non-primary server thread (Mist)");
+            }
+            // Mist end
             synchronized (this) {
                 fireEvent(event);
             }

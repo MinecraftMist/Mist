@@ -42,6 +42,9 @@ public class MohistConfig extends ConfigBase {
     // plugin fix
     public final BoolSetting enableworldeditfix = new BoolSetting(this, "mohist.enable_worldedit_fix", true);
 
+    // no sync events from async threads
+    public final BoolSetting nosynceventsfromasyncthreads = new BoolSetting(this, "mohist.no_sync_events_from_async_threads", true);
+
     // MohistProxySelector
     public final BoolSetting debug_msg = new BoolSetting(this, "mohist.networkmanager.debug", false);
 
