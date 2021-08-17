@@ -69,7 +69,7 @@
  import net.minecraft.entity.player.PlayerEntity;
  import net.minecraft.entity.player.ServerPlayerEntity;
  import net.minecraft.fluid.Fluid;
-@@ -106,2709 +_,3361 @@
+@@ -106,2709 +_,3359 @@
  import net.minecraft.world.server.TicketType;
  import net.minecraftforge.api.distmarker.Dist;
  import net.minecraftforge.api.distmarker.OnlyIn;
@@ -787,8 +787,6 @@
 +
 +    public boolean func_233562_a_(Entity p_233562_1_, double p_233562_2_) {
 +        double d0 = p_233562_1_.field_233557_ao_.field_72450_a - this.field_233557_ao_.field_72450_a;
-+        if (this.isAddedToWorld() && !this.field_70170_p.field_72995_K && field_70170_p instanceof ServerWorld)
-+            ((ServerWorld) this.field_70170_p).func_217464_b(this); // Forge - Process chunk registration after moving.
 +        double d1 = p_233562_1_.field_233557_ao_.field_72448_b - this.field_233557_ao_.field_72448_b;
 +        double d2 = p_233562_1_.field_233557_ao_.field_72449_c - this.field_233557_ao_.field_72449_c;
 +        return d0 * d0 + d1 * d1 + d2 * d2 < p_233562_2_ * p_233562_2_;
@@ -4603,7 +4601,7 @@
 +        this.func_226266_a_(p_184232_1_, Entity::func_70107_b);
 +    }
 +
-+    private void func_226266_a_(Entity p_226266_1_, Entity.IMoveCallback p_226266_2_) {
++    private void func_226266_a_(Entity p_226266_1_, IMoveCallback p_226266_2_) {
 +        if (this.func_184196_w(p_226266_1_)) {
 +            double d0 = this.func_226278_cu_() + this.func_70042_X() + p_226266_1_.func_70033_W();
 +            p_226266_2_.accept(p_226266_1_, this.func_226277_ct_(), d0, this.func_226281_cx_());
@@ -5070,7 +5068,7 @@
 +            return;
 +        }
 +        CraftEventFactory.entityDamage = p_241841_2_;
-+        if (!this.func_70097_a(DamageSource.field_180137_b, 5.0F)) {
++        if (!this.func_70097_a(DamageSource.field_180137_b, p_241841_2_.getDamage())) {
 +            CraftEventFactory.entityDamage = null;
 +            return;
 +        }

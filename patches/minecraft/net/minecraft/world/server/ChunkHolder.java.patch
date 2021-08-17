@@ -24,7 +24,7 @@
  import net.minecraft.tileentity.TileEntity;
  import net.minecraft.util.Util;
  import net.minecraft.util.math.BlockPos;
-@@ -37,377 +_,586 @@
+@@ -37,377 +_,587 @@
  import net.minecraftforge.api.distmarker.OnlyIn;
  
  public class ChunkHolder {
@@ -288,16 +288,17 @@
 -         });
 -
 -         for(int i = flag1 ? chunkstatus1.func_222584_c() + 1 : 0; i <= chunkstatus.func_222584_c(); ++i) {
-+    public static final Either<IChunk, ChunkHolder.IChunkLoadingError> field_219306_a = Either.right(ChunkHolder.IChunkLoadingError.field_219055_b);
-+    public static final CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> field_219307_b = CompletableFuture.completedFuture(field_219306_a);
-+    public static final Either<Chunk, ChunkHolder.IChunkLoadingError> field_219308_c = Either.right(ChunkHolder.IChunkLoadingError.field_219055_b);
-+    private static final CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> field_219309_d = CompletableFuture.completedFuture(field_219308_c);
+-            CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.field_219312_g.get(i);
++    public static final Either<IChunk, IChunkLoadingError> field_219306_a = Either.right(IChunkLoadingError.field_219055_b);
++    public static final CompletableFuture<Either<IChunk, IChunkLoadingError>> field_219307_b = CompletableFuture.completedFuture(field_219306_a);
++    public static final Either<Chunk, IChunkLoadingError> field_219308_c = Either.right(IChunkLoadingError.field_219055_b);
++    private static final CompletableFuture<Either<Chunk, IChunkLoadingError>> field_219309_d = CompletableFuture.completedFuture(field_219308_c);
 +    private static final List<ChunkStatus> field_219310_e = ChunkStatus.func_222582_a();
-+    private static final ChunkHolder.LocationType[] field_219311_f = ChunkHolder.LocationType.values();
-+    private final AtomicReferenceArray<CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>>> field_219312_g = new AtomicReferenceArray<>(field_219310_e.size());
-+    private volatile CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> field_222983_h = field_219309_d;
-+    private volatile CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> field_219313_h = field_219309_d;
-+    private volatile CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> field_219314_i = field_219309_d;
++    private static final LocationType[] field_219311_f = LocationType.values();
++    private final AtomicReferenceArray<CompletableFuture<Either<IChunk, IChunkLoadingError>>> field_219312_g = new AtomicReferenceArray<>(field_219310_e.size());
++    private volatile CompletableFuture<Either<Chunk, IChunkLoadingError>> field_222983_h = field_219309_d;
++    private volatile CompletableFuture<Either<Chunk, IChunkLoadingError>> field_219313_h = field_219309_d;
++    private volatile CompletableFuture<Either<Chunk, IChunkLoadingError>> field_219314_i = field_219309_d;
 +
 +    private int fullChunkCreateCount; // Paper - cache chunk ticking stage
 +    private volatile boolean isFullChunkReady; // Paper - cache chunk ticking stage
@@ -315,16 +316,17 @@
 +    private int field_219324_s;
 +    private int field_219325_t;
 +    private final WorldLightManager field_219326_u;
-+    private final ChunkHolder.IListener field_219327_v;
-+    public final ChunkHolder.IPlayerProvider field_219328_w;
++    private final IListener field_219327_v;
++    public final IPlayerProvider field_219328_w;
 +    private boolean field_219329_x;
 +    private boolean field_244384_x;
++    Chunk currentlyLoading; //Forge - Used to bypass future chain when loading chunks.
 +
 +    private final ChunkManager chunkMap; // Paper
 +    long lastAutoSaveTime; // Paper - incremental autosave
 +    long inactiveTimeStart; // Paper - incremental autosave
 +
-+    public ChunkHolder(ChunkPos p_i50716_1_, int p_i50716_2_, WorldLightManager p_i50716_3_, ChunkHolder.IListener p_i50716_4_, ChunkHolder.IPlayerProvider p_i50716_5_) {
++    public ChunkHolder(ChunkPos p_i50716_1_, int p_i50716_2_, WorldLightManager p_i50716_3_, IListener p_i50716_4_, IPlayerProvider p_i50716_5_) {
 +        this.field_219319_n = p_i50716_1_;
 +        this.location = p_i50716_1_;
 +        this.field_219326_u = p_i50716_3_;
@@ -340,24 +342,24 @@
 +    // Paper start
 +    @Nullable
 +    public final Chunk getEntityTickingChunk() {
-+        CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.field_219314_i;
-+        Either<Chunk, ChunkHolder.IChunkLoadingError> either = completablefuture.getNow(null);
++        CompletableFuture<Either<Chunk, IChunkLoadingError>> completablefuture = this.field_219314_i;
++        Either<Chunk, IChunkLoadingError> either = completablefuture.getNow(null);
 +
 +        return either == null ? null : either.left().orElse(null);
 +    }
 +
 +    @Nullable
 +    public final Chunk func_219298_c() {
-+        CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.field_219313_h;
-+        Either<Chunk, ChunkHolder.IChunkLoadingError> either = completablefuture.getNow(null);
++        CompletableFuture<Either<Chunk, IChunkLoadingError>> completablefuture = this.field_219313_h;
++        Either<Chunk, IChunkLoadingError> either = completablefuture.getNow(null);
 +
 +        return either == null ? null : either.left().orElse(null);
 +    }
 +
 +    @Nullable
 +    public final Chunk getFullReadyChunk() {
-+        CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.field_222983_h;
-+        Either<Chunk, ChunkHolder.IChunkLoadingError> either = completablefuture.getNow(null);
++        CompletableFuture<Either<Chunk, IChunkLoadingError>> completablefuture = this.field_222983_h;
++        Either<Chunk, IChunkLoadingError> either = completablefuture.getNow(null);
 +
 +        return either == null ? null : either.left().orElse(null);
 +    }
@@ -393,38 +395,38 @@
 +    // Paper start - "real" get full chunk immediately
 +    public final Chunk getFullChunkIfCached() {
 +        // Note: Copied from above without ticket level check
-+        CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> statusFuture = this.func_219301_a(ChunkStatus.field_222617_m);
-+        Either<IChunk, ChunkHolder.IChunkLoadingError> either = statusFuture.getNow(null);
++        CompletableFuture<Either<IChunk, IChunkLoadingError>> statusFuture = this.func_219301_a(ChunkStatus.field_222617_m);
++        Either<IChunk, IChunkLoadingError> either = statusFuture.getNow(null);
 +        return either == null ? null : (Chunk) either.left().orElse(null);
 +    }
 +    // Paper end
 +
-+    public CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> func_219301_a(ChunkStatus p_219301_1_) {
-+        CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.field_219312_g.get(p_219301_1_.func_222584_c());
++    public CompletableFuture<Either<IChunk, IChunkLoadingError>> func_219301_a(ChunkStatus p_219301_1_) {
++        CompletableFuture<Either<IChunk, IChunkLoadingError>> completablefuture = this.field_219312_g.get(p_219301_1_.func_222584_c());
 +        return completablefuture == null ? field_219307_b : completablefuture;
 +    }
 +
-+    public CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> func_225410_b(ChunkStatus p_225410_1_) {
++    public CompletableFuture<Either<IChunk, IChunkLoadingError>> func_225410_b(ChunkStatus p_225410_1_) {
 +        return func_219278_b(this.field_219317_l).func_209003_a(p_225410_1_) ? this.func_219301_a(p_225410_1_) : field_219307_b;
 +    }
 +
-+    public final CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> getTickingFuture() {
++    public final CompletableFuture<Either<Chunk, IChunkLoadingError>> getTickingFuture() {
 +        return this.func_219296_a();
 +    } // Paper - OBFHELPER
 +
-+    public final CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> func_219296_a() { // Paper - final for inline
++    public final CompletableFuture<Either<Chunk, IChunkLoadingError>> func_219296_a() { // Paper - final for inline
 +        return this.field_219313_h;
 +    }
 +
-+    public final CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> getEntityTickingFuture() {
++    public final CompletableFuture<Either<Chunk, IChunkLoadingError>> getEntityTickingFuture() {
 +        return this.func_219297_b();
 +    } // Paper - OBFHELPER
 +
-+    public final CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> func_219297_b() { // Paper - final for inline
++    public final CompletableFuture<Either<Chunk, IChunkLoadingError>> func_219297_b() { // Paper - final for inline
 +        return this.field_219314_i;
 +    }
 +
-+    public final CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> func_223492_c() { // Paper - final for inline
++    public final CompletableFuture<Either<Chunk, IChunkLoadingError>> func_223492_c() { // Paper - final for inline
 +        return this.field_222983_h;
 +    }
 +
@@ -433,7 +435,7 @@
 +    public ChunkStatus func_219285_d() {
 +        for (int i = field_219310_e.size() - 1; i >= 0; --i) {
 +            ChunkStatus chunkstatus = field_219310_e.get(i);
-+            CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.func_219301_a(chunkstatus);
++            CompletableFuture<Either<IChunk, IChunkLoadingError>> completablefuture = this.func_219301_a(chunkstatus);
 +            if (completablefuture.getNow(field_219306_a).left().isPresent()) {
 +                return chunkstatus;
 +            }
@@ -443,8 +445,8 @@
 +
 +    public ChunkStatus getChunkHolderStatus() {
 +        for (ChunkStatus curr = ChunkStatus.field_222617_m, next = curr.func_222593_e(); curr != next; curr = next, next = next.func_222593_e()) {
-+            CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> future = this.func_219301_a(curr);
-+            Either<IChunk, ChunkHolder.IChunkLoadingError> either = future.getNow(null);
++            CompletableFuture<Either<IChunk, IChunkLoadingError>> future = this.func_219301_a(curr);
++            Either<IChunk, IChunkLoadingError> either = future.getNow(null);
 +            if (either == null || !either.left().isPresent()) {
 +                continue;
 +            }
@@ -458,7 +460,7 @@
 +    public IChunk func_219287_e() {
 +        for (int i = field_219310_e.size() - 1; i >= 0; --i) {
 +            ChunkStatus chunkstatus = field_219310_e.get(i);
-+            CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.func_219301_a(chunkstatus);
++            CompletableFuture<Either<IChunk, IChunkLoadingError>> completablefuture = this.func_219301_a(chunkstatus);
 +            if (!completablefuture.isCompletedExceptionally()) {
 +                Optional<IChunk> optional = completablefuture.getNow(field_219306_a).left();
 +                if (optional.isPresent()) {
@@ -568,18 +570,18 @@
 +        });
 +    }
 +
-+    public CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> func_219276_a(ChunkStatus p_219276_1_, ChunkManager p_219276_2_) {
++    public CompletableFuture<Either<IChunk, IChunkLoadingError>> func_219276_a(ChunkStatus p_219276_1_, ChunkManager p_219276_2_) {
 +        int i = p_219276_1_.func_222584_c();
-+        CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.field_219312_g.get(i);
++        CompletableFuture<Either<IChunk, IChunkLoadingError>> completablefuture = this.field_219312_g.get(i);
 +        if (completablefuture != null) {
-+            Either<IChunk, ChunkHolder.IChunkLoadingError> either = completablefuture.getNow(null);
++            Either<IChunk, IChunkLoadingError> either = completablefuture.getNow(null);
 +            if (either == null || either.left().isPresent()) {
 +                return completablefuture;
 +            }
 +        }
 +
 +        if (func_219278_b(this.field_219317_l).func_209003_a(p_219276_1_)) {
-+            CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> completablefuture1 = p_219276_2_.func_219244_a(this, p_219276_1_);
++            CompletableFuture<Either<IChunk, IChunkLoadingError>> completablefuture1 = p_219276_2_.func_219244_a(this, p_219276_1_);
 +            this.func_219284_a(completablefuture1);
 +            this.field_219312_g.set(i, completablefuture1);
 +            return completablefuture1;
@@ -588,7 +590,7 @@
 +        }
 +    }
 +
-+    private void func_219284_a(CompletableFuture<? extends Either<? extends IChunk, ChunkHolder.IChunkLoadingError>> p_219284_1_) {
++    private void func_219284_a(CompletableFuture<? extends Either<? extends IChunk, IChunkLoadingError>> p_219284_1_) {
 +        this.field_219315_j = this.field_219315_j.thenCombine(p_219284_1_, (p_219295_0_, p_219295_1_) -> {
 +            return p_219295_1_.map((p_219283_0_) -> {
 +                return p_219283_0_;
@@ -599,7 +601,7 @@
 +    }
 +
 +    @OnlyIn(Dist.CLIENT)
-+    public ChunkHolder.LocationType func_219300_g() {
++    public LocationType func_219300_g() {
 +        return func_219286_c(this.field_219317_l);
 +    }
 +
@@ -628,8 +630,8 @@
 +        ChunkStatus chunkstatus1 = func_219278_b(this.field_219317_l);
 +        boolean flag = this.field_219316_k <= ChunkManager.field_219249_a;
 +        boolean flag1 = this.field_219317_l <= ChunkManager.field_219249_a; // Paper - diff on change: (flag1 = new ticket level is in loadable range)
-+        ChunkHolder.LocationType chunkholder$locationtype = func_219286_c(this.field_219316_k);
-+        ChunkHolder.LocationType chunkholder$locationtype1 = func_219286_c(this.field_219317_l);
++        LocationType chunkholder$locationtype = func_219286_c(this.field_219316_k);
++        LocationType chunkholder$locationtype1 = func_219286_c(this.field_219317_l);
 +        // CraftBukkit start
 +        // ChunkUnloadEvent: Called before the chunk is unloaded: isChunkLoaded is still true and chunk can still be modified by plugins.
 +        if (chunkholder$locationtype.func_219065_a(LocationType.BORDER) && !chunkholder$locationtype1.func_219065_a(LocationType.BORDER)) {
@@ -656,14 +658,14 @@
 +        }
 +        // CraftBukkit end
 +        if (flag) {
-+            Either<IChunk, ChunkHolder.IChunkLoadingError> either = Either.right(new ChunkHolder.IChunkLoadingError() {
++            Either<IChunk, IChunkLoadingError> either = Either.right(new IChunkLoadingError() {
 +                public String toString() {
 +                    return "Unloaded ticket level " + ChunkHolder.this.field_219319_n;
 +                }
 +            });
 +
 +            for (int i = flag1 ? chunkstatus1.func_222584_c() + 1 : 0; i <= chunkstatus.func_222584_c(); ++i) {
-+                CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.field_219312_g.get(i);
++                CompletableFuture<Either<IChunk, IChunkLoadingError>> completablefuture = this.field_219312_g.get(i);
 +                if (completablefuture != null) {
 +                    completablefuture.complete(either);
 +                } else {
@@ -672,8 +674,8 @@
 +            }
 +        }
 +
-+        boolean flag5 = chunkholder$locationtype.func_219065_a(ChunkHolder.LocationType.BORDER);
-+        boolean flag6 = chunkholder$locationtype1.func_219065_a(ChunkHolder.LocationType.BORDER);
++        boolean flag5 = chunkholder$locationtype.func_219065_a(LocationType.BORDER);
++        boolean flag6 = chunkholder$locationtype1.func_219065_a(LocationType.BORDER);
 +
 +        boolean prevHasBeenLoaded = this.field_219329_x; // Paper
 +        this.field_219329_x |= flag6;
@@ -705,7 +707,7 @@
 +        }
 +
 +        if (flag5 && !flag6) {
-+            CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>> completablefuture1 = this.field_222983_h;
++            CompletableFuture<Either<Chunk, IChunkLoadingError>> completablefuture1 = this.field_222983_h;
 +            this.field_222983_h = field_219309_d;
 +            ++this.fullChunkCreateCount; // Paper - cache ticking ready status
 +            this.isFullChunkReady = false; // Paper - cache ticking ready status
@@ -714,8 +716,8 @@
 +            }));
 +        }
 +
-+        boolean flag7 = chunkholder$locationtype.func_219065_a(ChunkHolder.LocationType.TICKING);
-+        boolean flag2 = chunkholder$locationtype1.func_219065_a(ChunkHolder.LocationType.TICKING);
++        boolean flag7 = chunkholder$locationtype.func_219065_a(LocationType.TICKING);
++        boolean flag2 = chunkholder$locationtype1.func_219065_a(LocationType.TICKING);
 +        if (!flag7 && flag2) {
 +            // Paper start - cache ticking ready status
 +            this.field_219313_h = p_219291_1_.func_219179_a(this);
@@ -740,8 +742,8 @@
 +            this.field_219313_h = field_219309_d;
 +        }
 +
-+        boolean flag3 = chunkholder$locationtype.func_219065_a(ChunkHolder.LocationType.ENTITY_TICKING);
-+        boolean flag4 = chunkholder$locationtype1.func_219065_a(ChunkHolder.LocationType.ENTITY_TICKING);
++        boolean flag3 = chunkholder$locationtype.func_219065_a(LocationType.ENTITY_TICKING);
++        boolean flag4 = chunkholder$locationtype1.func_219065_a(LocationType.ENTITY_TICKING);
 +        if (!flag3 && flag4) {
 +            if (this.field_219314_i != field_219309_d) {
 +                throw Util.func_229757_c_(new IllegalStateException());
@@ -794,7 +796,7 @@
 +        return p_219278_0_ < 33 ? ChunkStatus.field_222617_m : ChunkStatus.func_222581_a(p_219278_0_ - 33);
 +    }
 +
-+    public static ChunkHolder.LocationType func_219286_c(int p_219286_0_) {
++    public static LocationType func_219286_c(int p_219286_0_) {
 +        return field_219311_f[MathHelper.func_76125_a(33 - p_219286_0_ + 1, 0, field_219311_f.length - 1)];
 +    }
 +
@@ -804,7 +806,7 @@
 +
 +    public void func_219303_l() {
 +        boolean prev = this.field_219329_x; // Paper
-+        this.field_219329_x = func_219286_c(this.field_219317_l).func_219065_a(ChunkHolder.LocationType.BORDER);
++        this.field_219329_x = func_219286_c(this.field_219317_l).func_219065_a(LocationType.BORDER);
 +        // Paper start - incremental autosave
 +        if (prev != this.field_219329_x) {
 +            if (this.field_219329_x) {
@@ -825,14 +827,14 @@
 +
 +    // Paper start - incremental autosave
 +    public boolean setHasBeenLoaded() {
-+        this.field_219329_x = func_219286_c(this.field_219317_l).func_219065_a(ChunkHolder.LocationType.BORDER);
++        this.field_219329_x = func_219286_c(this.field_219317_l).func_219065_a(LocationType.BORDER);
 +        return this.field_219329_x;
 +    }
 +    // Paper end
 +
 +    public void func_219294_a(ChunkPrimerWrapper p_219294_1_) {
 +        for (int i = 0; i < this.field_219312_g.length(); ++i) {
-             CompletableFuture<Either<IChunk, ChunkHolder.IChunkLoadingError>> completablefuture = this.field_219312_g.get(i);
++            CompletableFuture<Either<IChunk, IChunkLoadingError>> completablefuture = this.field_219312_g.get(i);
              if (completablefuture != null) {
 -               completablefuture.complete(either);
 -            } else {
@@ -956,7 +958,7 @@
 +    }
 +
 +    public interface IChunkLoadingError {
-+        ChunkHolder.IChunkLoadingError field_219055_b = new ChunkHolder.IChunkLoadingError() {
++        IChunkLoadingError field_219055_b = new IChunkLoadingError() {
 +            public String toString() {
 +                return "UNLOADED";
 +            }
@@ -977,7 +979,7 @@
 +        TICKING,
 +        ENTITY_TICKING;
 +
-+        public boolean func_219065_a(ChunkHolder.LocationType p_219065_1_) {
++        public boolean func_219065_a(LocationType p_219065_1_) {
 +            return this.ordinal() >= p_219065_1_.ordinal();
 +        }
 +    }

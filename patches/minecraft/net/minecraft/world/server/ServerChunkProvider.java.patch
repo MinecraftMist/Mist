@@ -39,7 +39,7 @@
  import net.minecraft.world.chunk.listener.IChunkStatusListener;
  import net.minecraft.world.gen.ChunkGenerator;
  import net.minecraft.world.gen.feature.template.TemplateManager;
-@@ -47,472 +_,917 @@
+@@ -47,472 +_,922 @@
  import net.minecraftforge.api.distmarker.OnlyIn;
  
  public class ServerChunkProvider extends AbstractChunkProvider {
@@ -213,7 +213,7 @@
 +    public final ServerWorld field_73251_h;
 +    public final Thread field_217241_g; // Paper - private -> public
 +    private final ServerWorldLightManager field_217242_h;
-+    public final ServerChunkProvider.ChunkExecutor field_217243_i; // Paper - private -> public
++    public final ChunkExecutor field_217243_i; // Paper - private -> public
 +    public final ChunkManager field_217237_a;
 +    private final DimensionSavedDataManager field_217244_j;
 +    private long field_217245_k;
@@ -298,7 +298,7 @@
 +
 +    private long chunkFutureAwaitCounter;
 +
-+    public void getEntityTickingChunkAsync(int x, int z, java.util.function.Consumer<Chunk> onLoad) {
++    public void getEntityTickingChunkAsync(int x, int z, Consumer<Chunk> onLoad) {
 +        if (Thread.currentThread() != this.field_217241_g) {
 +            this.field_217243_i.execute(() -> {
 +                ServerChunkProvider.this.getEntityTickingChunkAsync(x, z, onLoad);
@@ -308,7 +308,7 @@
 +        this.getChunkFutureAsynchronously(x, z, 31, ChunkHolder::getEntityTickingFuture, onLoad);
 +    }
 +
-+    public void getTickingChunkAsync(int x, int z, java.util.function.Consumer<Chunk> onLoad) {
++    public void getTickingChunkAsync(int x, int z, Consumer<Chunk> onLoad) {
 +        if (Thread.currentThread() != this.field_217241_g) {
 +            this.field_217243_i.execute(() -> {
 +                ServerChunkProvider.this.getTickingChunkAsync(x, z, onLoad);
@@ -318,7 +318,7 @@
 +        this.getChunkFutureAsynchronously(x, z, 32, ChunkHolder::getTickingFuture, onLoad);
 +    }
 +
-+    public void getFullChunkAsync(int x, int z, java.util.function.Consumer<Chunk> onLoad) {
++    public void getFullChunkAsync(int x, int z, Consumer<Chunk> onLoad) {
 +        if (Thread.currentThread() != this.field_217241_g) {
 +            this.field_217243_i.execute(() -> {
 +                ServerChunkProvider.this.getFullChunkAsync(x, z, onLoad);
@@ -328,7 +328,7 @@
 +        this.getChunkFutureAsynchronously(x, z, 33, ChunkHolder::func_223492_c, onLoad);
 +    }
 +
-+    private void getChunkFutureAsynchronously(int x, int z, int ticketLevel, Function<ChunkHolder, CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>>> futureGet, java.util.function.Consumer<Chunk> onLoad) {
++    private void getChunkFutureAsynchronously(int x, int z, int ticketLevel, Function<ChunkHolder, CompletableFuture<Either<Chunk, ChunkHolder.IChunkLoadingError>>> futureGet, Consumer<Chunk> onLoad) {
 +        if (Thread.currentThread() != this.field_217241_g) {
 +            throw new IllegalStateException();
 +        }
@@ -379,14 +379,14 @@
 +    // Paper end
 +    // Paper start - rewrite ticklistserver
 +    public final boolean isTickingReadyMainThread(BlockPos pos) {
-+        ChunkHolder chunk = this.field_217237_a.func_219220_a(net.minecraft.addons.server.MCUtil.getCoordinateKey(pos));
++        ChunkHolder chunk = this.field_217237_a.func_219220_a(MCUtil.getCoordinateKey(pos));
 +        return chunk != null && chunk.isTickingReady();
 +    }
 +    // Paper end - rewrite ticklistserver
 +
 +    public ServerChunkProvider(ServerWorld p_i232603_1_, SaveFormat.LevelSave p_i232603_2_, DataFixer p_i232603_3_, TemplateManager p_i232603_4_, Executor p_i232603_5_, ChunkGenerator p_i232603_6_, int p_i232603_7_, boolean p_i232603_8_, IChunkStatusListener p_i232603_9_, Supplier<DimensionSavedDataManager> p_i232603_10_) {
 +        this.field_73251_h = p_i232603_1_;
-+        this.field_217243_i = new ServerChunkProvider.ChunkExecutor(p_i232603_1_);
++        this.field_217243_i = new ChunkExecutor(p_i232603_1_);
 +        this.field_186029_c = p_i232603_6_;
 +        this.field_217241_g = Thread.currentThread();
 +        File file1 = p_i232603_2_.func_237291_a_(p_i232603_1_.func_234923_W_());
@@ -625,6 +625,11 @@
 +                        return ichunk;
 +                    }
 +                }
++            }
++
++            ChunkHolder chunkholder = this.func_217213_a(i);
++            if (chunkholder != null && chunkholder.currentlyLoading != null) {
++                return chunkholder.currentlyLoading; //Forge - If the requested chunk is loading, bypass the future chain to prevent a deadlock.
 +            }
 +
 +            iprofiler.func_230035_c_("getChunkCacheMiss");

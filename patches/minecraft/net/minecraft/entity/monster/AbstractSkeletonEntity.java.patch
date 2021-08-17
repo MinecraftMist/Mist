@@ -1,13 +1,5 @@
 --- a/net/minecraft/entity/monster/AbstractSkeletonEntity.java
 +++ b/net/minecraft/entity/monster/AbstractSkeletonEntity.java
-@@ -2,6 +_,7 @@
- 
- import java.time.LocalDate;
- import java.time.temporal.ChronoField;
-+import java.util.ConcurrentModificationException;
- import javax.annotation.Nullable;
- import net.minecraft.block.BlockState;
- import net.minecraft.block.Blocks;
 @@ -37,6 +_,7 @@
  import net.minecraft.item.Items;
  import net.minecraft.item.ShootableItem;
@@ -24,24 +16,15 @@
  
  public abstract class AbstractSkeletonEntity extends MonsterEntity implements IRangedAttackMob {
     private final RangedBowAttackGoal<AbstractSkeletonEntity> field_85037_d = new RangedBowAttackGoal<>(this, 1.0D, 20, 15.0F);
-@@ -113,7 +_,16 @@
-          }
-       }
- 
--      super.func_70636_d();
-+      // Mist start - Naive workaround for concurrency issue in skeleton AI
-+      try {
-+         // ???
-+         // ConcurrentModificationException with Wither Skeletons' Goal Selector,
-+         // possibly highly situational/modpack-dependant. Just try-catch for now.
-+         super.func_70636_d();
-+      } catch (ConcurrentModificationException cme) {
-+         cme.printStackTrace();
-+      }
-+      // Mist end
-    }
- 
-    public void func_70098_U() {
+@@ -154,7 +_,7 @@
+       if (this.field_70170_p != null && !this.field_70170_p.field_72995_K) {
+          this.field_70714_bg.func_85156_a(this.field_85038_e);
+          this.field_70714_bg.func_85156_a(this.field_85037_d);
+-         ItemStack itemstack = this.func_184586_b(ProjectileHelper.func_221274_a(this, Items.field_151031_f));
++         ItemStack itemstack = this.func_184586_b(ProjectileHelper.getWeaponHoldingHand(this, item -> item instanceof net.minecraft.item.BowItem));
+          if (itemstack.func_77973_b() == Items.field_151031_f) {
+             int i = 20;
+             if (this.field_70170_p.func_175659_aa() != Difficulty.HARD) {
 @@ -173,13 +_,26 @@
     public void func_82196_d(LivingEntity p_82196_1_, float p_82196_2_) {
        ItemStack itemstack = this.func_213356_f(this.func_184586_b(ProjectileHelper.func_221274_a(this, Items.field_151031_f)));
