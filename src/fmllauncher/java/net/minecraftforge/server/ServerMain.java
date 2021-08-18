@@ -22,6 +22,8 @@ package net.minecraftforge.server;
 import com.mohistmc.MohistMCStart;
 import com.mohistmc.config.MohistConfigUtil;
 import com.mohistmc.network.download.DownloadJava;
+import com.mohistmc.network.download.UpdateUtils;
+import com.mohistmc.util.CustomFlagsHandler;
 import com.mohistmc.util.JarTool;
 import com.mohistmc.util.i18n.i18n;
 import cpw.mods.modlauncher.InvalidLauncherSetupException;
@@ -43,7 +45,7 @@ public class ServerMain {
 
   public static ArrayList<String> mainArgs = null;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
       mainArgs = new ArrayList<>(Arrays.asList(args));
       String path = JarTool.getJarPath();
       if(path != null && (path.contains("+") || path.contains("!"))) {
@@ -53,7 +55,7 @@ public class ServerMain {
 
         // Mohist start - Download Java 11 if required
 		float jVersion = Float.parseFloat(System.getProperty("java.class.version"));
-        if (jVersion < 55f || jVersion == 60.0 || MohistConfigUtil.bMohist("use_custom_java11", "false")) {
+        if (jVersion < 55f || MohistConfigUtil.bMohist("use_custom_java11", "false")) {
             if (!DownloadJava.javabin.exists()) System.err.println(i18n.get("oldjava.notify"));
             try {
                 DownloadJava.run(); // Mohist - Invoke DownloadJava
@@ -64,6 +66,18 @@ public class ServerMain {
             }
         }
 
+        // Mohist start
+        if(jVersion == 60.0 && !mainArgs.contains("launchedWithJava16")) {
+            ArrayList<String> command = new ArrayList<>(Arrays.asList("java", "-jar", "--add-exports=java.base/sun.security.util=ALL-UNNAMED", "--add-opens=java.base/java.util.jar=ALL-UNNAMED", "--add-opens=java.base/java.lang=ALL-UNNAMED", "--add-opens=java.base/java.net=ALL-UNNAMED"));
+            command.addAll(CustomFlagsHandler.getCustomFlags());
+            command.add(new File(MohistMCStart.class.getProtectionDomain().getCodeSource().getLocation().getPath().substring(1)).getName());
+            command.addAll(ServerMain.mainArgs);
+            command.add("launchedWithJava16");
+            if(CustomFlagsHandler.hasCustomFlags) command.add("launchedWithCustomArgs"); //Handle custom args and do not restart the server twice.
+            System.out.println(i18n.get("java16.run", String.join(" ", command)));
+            UpdateUtils.restartServer(command, true);
+        }
+        // Mohist end
         try {
             MohistMCStart.main();
             // Mohist end
