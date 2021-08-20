@@ -1,5 +1,28 @@
 --- a/net/minecraft/util/math/shapes/VoxelShapes.java
 +++ b/net/minecraft/util/math/shapes/VoxelShapes.java
+@@ -3,11 +_,13 @@
+ import com.google.common.annotations.VisibleForTesting;
+ import com.google.common.math.DoubleMath;
+ import com.google.common.math.IntMath;
++import com.mohistmc.api.mc.ChunkMcAPI;
+ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+ import it.unimi.dsi.fastutil.doubles.DoubleList;
+ import java.util.Arrays;
+ import java.util.Iterator;
+ import java.util.Objects;
++import java.util.Optional;
+ import java.util.stream.Stream;
+ import net.minecraft.block.BlockState;
+ import net.minecraft.block.Blocks;
+@@ -18,6 +_,8 @@
+ import net.minecraft.util.math.BlockPos;
+ import net.minecraft.util.math.MathHelper;
+ import net.minecraft.world.IWorldReader;
++import net.minecraft.world.chunk.Chunk;
++import net.minecraft.world.server.ServerWorld;
+ import net.minecraftforge.api.distmarker.Dist;
+ import net.minecraftforge.api.distmarker.OnlyIn;
+ 
 @@ -34,6 +_,7 @@
        return field_197886_a;
     }
@@ -8,6 +31,24 @@
     public static VoxelShape func_197868_b() {
        return field_197887_b;
     }
+@@ -234,7 +_,16 @@
+ 
+                      if (k2 < 3) {
+                         blockpos$mutable.func_218295_a(axisrotation, i2, j2, l1);
+-                        BlockState blockstate = p_216386_1_.func_180495_p(blockpos$mutable);
++
++                        // Mist start - Prevent chunkloading by collisions
++                        Optional<Chunk> chunkOpt = p_216386_1_ instanceof ServerWorld ?
++                                ChunkMcAPI.getBorderChunkNow((ServerWorld) p_216386_1_, blockpos$mutable.func_177958_n() >> 4, blockpos$mutable.func_177952_p() >> 4) : Optional.empty();
++                        if (chunkOpt.isEmpty()) {
++                           return 0.0D;
++                        }
++                        // Mist end
++
++                        BlockState blockstate = chunkOpt.get().func_180495_p(blockpos$mutable); // Mist - Prevent chunkloading by collisions
+                         if ((k2 != 1 || blockstate.func_215704_f()) && (k2 != 2 || blockstate.func_203425_a(Blocks.field_196603_bb))) {
+                            p_216386_2_ = blockstate.func_215685_b(p_216386_1_, blockpos$mutable, p_216386_4_).func_212430_a(direction$axis2, p_216386_0_.func_72317_d((double)(-blockpos$mutable.func_177958_n()), (double)(-blockpos$mutable.func_177956_o()), (double)(-blockpos$mutable.func_177952_p())), p_216386_2_);
+                            if (Math.abs(p_216386_2_) < 1.0E-7D) {
 @@ -332,31 +_,48 @@
        }
     }

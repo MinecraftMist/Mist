@@ -1,0 +1,45 @@
+--- a/net/minecraft/util/math/shapes/VoxelShapeSpliterator.java
++++ b/net/minecraft/util/math/shapes/VoxelShapeSpliterator.java
+@@ -1,10 +_,13 @@
+ package net.minecraft.util.math.shapes;
+ 
+ import java.util.Objects;
++import java.util.Optional;
+ import java.util.Spliterators.AbstractSpliterator;
+ import java.util.function.BiPredicate;
+ import java.util.function.Consumer;
+ import javax.annotation.Nullable;
++
++import com.mohistmc.api.mc.ChunkMcAPI;
+ import net.minecraft.block.BlockState;
+ import net.minecraft.block.Blocks;
+ import net.minecraft.entity.Entity;
+@@ -15,6 +_,8 @@
+ import net.minecraft.world.IBlockReader;
+ import net.minecraft.world.ICollisionReader;
+ import net.minecraft.world.border.WorldBorder;
++import net.minecraft.world.chunk.Chunk;
++import net.minecraft.world.server.ServerWorld;
+ 
+ public class VoxelShapeSpliterator extends AbstractSpliterator<VoxelShape> {
+    @Nullable
+@@ -68,13 +_,16 @@
+                continue;
+             }
+ 
+-            IBlockReader iblockreader = this.func_234876_a_(i, k);
+-            if (iblockreader == null) {
++            // Mist start - Prevent chunkloading by collisions
++            Optional<Chunk> chunkOpt = this.field_234874_g_ instanceof ServerWorld ?
++                    ChunkMcAPI.getBorderChunkNow((ServerWorld) this.field_234874_g_, i >> 4, k >> 4) : Optional.empty();
++            if (chunkOpt.isEmpty()) {
+                continue;
+             }
++            // Mist end
+ 
+             this.field_234872_e_.func_181079_c(i, j, k);
+-            BlockState blockstate = iblockreader.func_180495_p(this.field_234872_e_);
++            BlockState blockstate = chunkOpt.get().func_180495_p(this.field_234872_e_); // Mist - Prevent chunkloading by collisions
+             if (!this.field_241458_i_.test(blockstate, this.field_234872_e_) || l == 1 && !blockstate.func_215704_f() || l == 2 && !blockstate.func_203425_a(Blocks.field_196603_bb)) {
+                continue;
+             }
