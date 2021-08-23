@@ -45,6 +45,12 @@ public class MohistConfig extends ConfigBase {
     // no sync events from async threads
     public final BoolSetting nosynceventsfromasyncthreads = new BoolSetting(this, "mohist.no_sync_events_from_async_threads", true);
 
+    // abnormal motion vectors cap
+    public final IntSetting abnormalmotionvectorscap = new IntSetting(this, "mohist.abnormal_motion_vectors_cap", 20);
+
+    // abnormal motion vectors debug
+    public final BoolSetting abnormalmotionvectorsdebug = new BoolSetting(this, "mohist.abnormal_motion_vectors_debug", false);
+
     // MohistProxySelector
     public final BoolSetting debug_msg = new BoolSetting(this, "mohist.networkmanager.debug", false);
 
