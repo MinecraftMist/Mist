@@ -70,7 +70,7 @@
  import net.minecraft.entity.player.PlayerEntity;
  import net.minecraft.entity.player.ServerPlayerEntity;
  import net.minecraft.fluid.Fluid;
-@@ -106,2709 +_,3379 @@
+@@ -106,2709 +_,3382 @@
  import net.minecraft.world.server.TicketType;
  import net.minecraftforge.api.distmarker.Dist;
  import net.minecraftforge.api.distmarker.OnlyIn;
@@ -5970,23 +5970,26 @@
 +    public void func_213317_d(Vector3d p_213317_1_) {
 +        // Mist start - Option to cap abnormal motion vectors
 +        double cap = MohistConfig.instance.abnormalmotionvectorscap.getValue();
-+        double x = p_213317_1_.func_82615_a();
-+        double y = p_213317_1_.func_82617_b();
-+        double z = p_213317_1_.func_82616_c();
-+        if ((x > cap || x < -cap)
-+         || (y > cap || y < -cap)
-+         || (z > cap || z < -cap)) {
-+            this.field_213327_at = new Vector3d(
-+                    Math.min(Math.max(x, -cap), cap),
-+                    Math.min(Math.max(y, -cap), cap),
-+                    Math.min(Math.max(z, -cap), cap)
-+            );
-+            boolean debug = MohistConfig.instance.abnormalmotionvectorsdebug.getValue();
-+            if (debug) {
-+                field_184243_a.warn("[Mist] Capped motion vector to " + cap + ", initial vector: " + p_213317_1_.toString());
-+                Thread.dumpStack();
++        if (cap > 0) { // Mist - Disable motion vector cap if <= 0
++            double x = p_213317_1_.func_82615_a();
++            double y = p_213317_1_.func_82617_b();
++            double z = p_213317_1_.func_82616_c();
++            if ((x > cap || x < -cap)
++             || (y > cap || y < -cap)
++             || (z > cap || z < -cap)) {
++                this.field_213327_at = new Vector3d(
++                        Math.min(Math.max(x, -cap), cap),
++                        Math.min(Math.max(y, -cap), cap),
++                        Math.min(Math.max(z, -cap), cap)
++                );
++                boolean debug = MohistConfig.instance.abnormalmotionvectorsdebug.getValue();
++                if (debug) {
++                    field_184243_a.warn("[Mist] Capped motion vector to " + cap + ", initial vector: " + p_213317_1_.toString());
++                    Thread.dumpStack();
++                }
++                return;
 +            }
-+        } else
++        }
 +        // Mist end
 +        this.field_213327_at = p_213317_1_;
 +    }
