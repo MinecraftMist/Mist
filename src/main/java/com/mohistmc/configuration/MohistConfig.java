@@ -51,6 +51,12 @@ public class MohistConfig extends ConfigBase {
     // abnormal motion vectors debug
     public final BoolSetting abnormalmotionvectorsdebug = new BoolSetting(this, "mohist.abnormal_motion_vectors_debug", false);
 
+    // chunk unloads per tick cap
+    public final IntSetting chunkunloadspertickcap = new IntSetting(this, "mohist.chunk_unloads_per_tick_cap", 2000);
+
+    // chunk unloads per tick debug
+    public final BoolSetting chunkunloadspertickdebug = new BoolSetting(this, "mohist.chunk_unloads_per_tick_debug", false);
+
     // MohistProxySelector
     public final BoolSetting debug_msg = new BoolSetting(this, "mohist.networkmanager.debug", false);
 
