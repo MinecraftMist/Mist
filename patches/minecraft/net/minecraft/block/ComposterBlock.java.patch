@@ -26,7 +26,7 @@
           return ActionResultType.func_233537_a_(p_225533_2_.field_72995_K);
        } else {
           return ActionResultType.PASS;
-@@ -204,29 +_,49 @@
+@@ -204,29 +_,53 @@
     }
  
     public static BlockState func_235486_a_(BlockState p_235486_0_, ServerWorld p_235486_1_, ItemStack p_235486_2_, BlockPos p_235486_3_) {
@@ -43,7 +43,7 @@
 +         // CraftBukkit start
 +         double rand = world.func_201674_k().nextDouble();
 +         BlockState blockstate = attemptCompost(state, DummyGeneratorAccess.INSTANCE, pos, stack, rand);
-+         if (state == blockstate || org.bukkit.craftbukkit.v1_16_R3.event.CraftEventFactory.callEntityChangeBlockEvent(entity, pos, blockstate).isCancelled()) {
++         if (state == blockstate || (entity == null || org.bukkit.craftbukkit.v1_16_R3.event.CraftEventFactory.callEntityChangeBlockEvent(entity, pos, blockstate).isCancelled())) {
 +            return state;
 +         }
 +         blockstate = attemptCompost(state, (IWorld) world, pos, stack, rand);
@@ -57,8 +57,11 @@
        }
     }
  
--   public static BlockState func_235489_d_(BlockState p_235489_0_, World p_235489_1_, BlockPos p_235489_2_) {
+    public static BlockState func_235489_d_(BlockState p_235489_0_, World p_235489_1_, BlockPos p_235489_2_) {
 -      if (!p_235489_1_.field_72995_K) {
++      return empty(p_235489_0_, p_235489_1_, p_235489_2_, null);
++   }
++
 +   // CraftBukkit start
 +   public static BlockState empty(BlockState state, World world, BlockPos pos, Entity entity) {
 +      if (entity != null) {
@@ -120,7 +123,7 @@
           }
  
           return blockstate;
-@@ -282,13 +_,15 @@
+@@ -282,13 +_,19 @@
        if (i == 8) {
           return new ComposterBlock.FullInventory(p_219966_1_, p_219966_2_, p_219966_3_, new ItemStack(Items.field_196106_bc));
        } else {
@@ -132,8 +135,13 @@
  
     static class EmptyInventory extends Inventory implements ISidedInventory {
 -      public EmptyInventory() {
+-         super(0);
++      public EmptyInventory() { // CraftBukkit
++         super(0);
++      }
++
 +      public EmptyInventory(IWorld world, BlockPos blockPos) { // CraftBukkit
-          super(0);
++         super(0);
 +         this.bukkitOwner = new CraftBlockInventoryHolder(world, blockPos, this); // CraftBukkit
        }
  
