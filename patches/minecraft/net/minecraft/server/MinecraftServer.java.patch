@@ -1,80 +1,82 @@
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1,18 +_,7 @@
+@@ -1,10 +_,14 @@
  package net.minecraft.server;
  
--import com.google.common.base.Splitter;
--import com.google.common.collect.ImmutableList;
--import com.google.common.collect.Lists;
--import com.google.common.collect.Maps;
--import com.google.common.collect.Sets;
--import com.mojang.authlib.GameProfile;
--import com.mojang.authlib.GameProfileRepository;
--import com.mojang.authlib.minecraft.MinecraftSessionService;
--import com.mojang.datafixers.DataFixer;
--import io.netty.buffer.ByteBuf;
--import io.netty.buffer.ByteBufOutputStream;
--import io.netty.buffer.Unpooled;
--import it.unimi.dsi.fastutil.longs.LongIterator;
 +import co.aikar.timings.MinecraftTimings;
-+
- import java.awt.image.BufferedImage;
- import java.io.File;
- import java.io.IOException;
-@@ -37,19 +_,51 @@
- import java.util.Date;
- import java.util.List;
- import java.util.Map;
-+import java.util.Map.Entry;
- import java.util.Objects;
- import java.util.Optional;
- import java.util.Random;
- import java.util.Set;
- import java.util.UUID;
--import java.util.Map.Entry;
- import java.util.concurrent.CompletableFuture;
- import java.util.concurrent.Executor;
- import java.util.concurrent.atomic.AtomicReference;
- import java.util.function.BooleanSupplier;
- import java.util.function.Function;
-+
- import javax.annotation.Nullable;
- import javax.imageio.ImageIO;
-+
-+import net.minecraft.addons.server.MCUtil;
-+import org.apache.commons.lang3.Validate;
-+import org.apache.logging.log4j.LogManager;
-+import org.apache.logging.log4j.Logger;
-+import org.bukkit.Bukkit;
-+import org.bukkit.craftbukkit.v1_16_R3.CraftServer;
-+import org.bukkit.event.server.ServerLoadEvent;
-+import org.bukkit.event.world.WorldInitEvent;
-+import org.bukkit.event.world.WorldLoadEvent;
-+import org.spigotmc.SlackActivityAccountant;
-+
-+import com.google.common.base.Splitter;
-+import com.google.common.collect.ImmutableList;
-+import com.google.common.collect.Lists;
-+import com.google.common.collect.Maps;
-+import com.google.common.collect.Sets;
+ import com.google.common.base.Splitter;
+ import com.google.common.collect.ImmutableList;
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
+ import com.google.common.collect.Sets;
 +import com.mohistmc.common.async.MohistThreadBox;
 +import com.mohistmc.forge.ForgeInjectBukkit;
 +import com.mohistmc.util.DatapackCodecUtils;
-+import com.mojang.authlib.GameProfile;
-+import com.mojang.authlib.GameProfileRepository;
-+import com.mojang.authlib.minecraft.MinecraftSessionService;
-+import com.mojang.datafixers.DataFixer;
-+
-+import io.netty.buffer.ByteBuf;
-+import io.netty.buffer.ByteBufOutputStream;
-+import io.netty.buffer.Unpooled;
+ import com.mojang.authlib.GameProfile;
+ import com.mojang.authlib.GameProfileRepository;
+ import com.mojang.authlib.minecraft.MinecraftSessionService;
+@@ -12,44 +_,10 @@
+ import io.netty.buffer.ByteBuf;
+ import io.netty.buffer.ByteBufOutputStream;
+ import io.netty.buffer.Unpooled;
 +import io.papermc.paper.event.server.ServerResourcesReloadedEvent;
-+import it.unimi.dsi.fastutil.longs.LongIterator;
+ import it.unimi.dsi.fastutil.longs.LongIterator;
+-import java.awt.image.BufferedImage;
+-import java.io.File;
+-import java.io.IOException;
+-import java.io.UnsupportedEncodingException;
+-import java.io.Writer;
+-import java.lang.management.ManagementFactory;
+-import java.lang.management.ThreadInfo;
+-import java.lang.management.ThreadMXBean;
+-import java.net.Proxy;
+-import java.net.URLEncoder;
+-import java.nio.ByteBuffer;
+-import java.nio.charset.StandardCharsets;
+-import java.nio.file.Files;
+-import java.nio.file.Path;
+-import java.security.KeyPair;
+-import java.text.SimpleDateFormat;
+-import java.util.Arrays;
+-import java.util.Base64;
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.Comparator;
+-import java.util.Date;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Objects;
+-import java.util.Optional;
+-import java.util.Random;
+-import java.util.Set;
+-import java.util.UUID;
+-import java.util.Map.Entry;
+-import java.util.concurrent.CompletableFuture;
+-import java.util.concurrent.Executor;
+-import java.util.concurrent.atomic.AtomicReference;
+-import java.util.function.BooleanSupplier;
+-import java.util.function.Function;
+-import javax.annotation.Nullable;
+-import javax.imageio.ImageIO;
 +import joptsimple.OptionSet;
++import net.minecraft.addons.server.MCUtil;
  import net.minecraft.advancements.AdvancementManager;
  import net.minecraft.advancements.FunctionManager;
  import net.minecraft.block.Block;
-@@ -81,6 +_,7 @@
+@@ -69,18 +_,13 @@
+ import net.minecraft.network.ServerStatusResponse;
+ import net.minecraft.network.play.server.SServerDifficultyPacket;
+ import net.minecraft.network.play.server.SUpdateTimePacket;
+-import net.minecraft.profiler.EmptyProfiler;
+-import net.minecraft.profiler.IProfileResult;
+-import net.minecraft.profiler.IProfiler;
+-import net.minecraft.profiler.ISnooperInfo;
+-import net.minecraft.profiler.LongTickDetector;
+-import net.minecraft.profiler.Snooper;
+-import net.minecraft.profiler.TimeTracker;
++import net.minecraft.profiler.*;
+ import net.minecraft.resources.DataPackRegistries;
+ import net.minecraft.resources.ResourcePackInfo;
  import net.minecraft.resources.ResourcePackList;
  import net.minecraft.scoreboard.ScoreboardSaveData;
  import net.minecraft.scoreboard.ServerScoreboard;
@@ -82,14 +84,98 @@
  import net.minecraft.server.management.OpEntry;
  import net.minecraft.server.management.PlayerList;
  import net.minecraft.server.management.PlayerProfileCache;
-@@ -152,1430 +_,1789 @@
- import net.minecraft.world.storage.WorldSavedDataCallableSave;
+@@ -88,15 +_,7 @@
+ import net.minecraft.tags.BlockTags;
+ import net.minecraft.tags.ITagCollectionSupplier;
+ import net.minecraft.test.TestCollection;
+-import net.minecraft.util.CryptException;
+-import net.minecraft.util.CryptManager;
+-import net.minecraft.util.FrameTimer;
+-import net.minecraft.util.IProgressUpdate;
+-import net.minecraft.util.RegistryKey;
+-import net.minecraft.util.ResourceLocation;
+-import net.minecraft.util.SharedConstants;
+-import net.minecraft.util.Unit;
+-import net.minecraft.util.Util;
++import net.minecraft.util.*;
+ import net.minecraft.util.concurrent.RecursiveEventLoop;
+ import net.minecraft.util.concurrent.TickDelayedTask;
+ import net.minecraft.util.datafix.codec.DatapackCodec;
+@@ -113,14 +_,7 @@
+ import net.minecraft.util.text.TranslationTextComponent;
+ import net.minecraft.util.text.filter.IChatFilter;
+ import net.minecraft.village.VillageSiege;
+-import net.minecraft.world.Difficulty;
+-import net.minecraft.world.Dimension;
+-import net.minecraft.world.DimensionType;
+-import net.minecraft.world.ForcedChunksSaveData;
+-import net.minecraft.world.GameRules;
+-import net.minecraft.world.GameType;
+-import net.minecraft.world.World;
+-import net.minecraft.world.WorldSettings;
++import net.minecraft.world.*;
+ import net.minecraft.world.biome.BiomeManager;
+ import net.minecraft.world.biome.provider.BiomeProvider;
+ import net.minecraft.world.border.IBorderListener;
+@@ -135,1447 +_,1890 @@
+ import net.minecraft.world.server.ServerChunkProvider;
+ import net.minecraft.world.server.ServerWorld;
+ import net.minecraft.world.server.TicketType;
+-import net.minecraft.world.spawner.CatSpawner;
+-import net.minecraft.world.spawner.ISpecialSpawner;
+-import net.minecraft.world.spawner.PatrolSpawner;
+-import net.minecraft.world.spawner.PhantomSpawner;
+-import net.minecraft.world.spawner.WanderingTraderSpawner;
+-import net.minecraft.world.storage.CommandStorage;
+-import net.minecraft.world.storage.DerivedWorldInfo;
+-import net.minecraft.world.storage.DimensionSavedDataManager;
+-import net.minecraft.world.storage.FolderName;
+-import net.minecraft.world.storage.IServerConfiguration;
+-import net.minecraft.world.storage.IServerWorldInfo;
+-import net.minecraft.world.storage.IWorldInfo;
+-import net.minecraft.world.storage.PlayerData;
+-import net.minecraft.world.storage.SaveFormat;
+-import net.minecraft.world.storage.WorldSavedDataCallableSave;
++import net.minecraft.world.spawner.*;
++import net.minecraft.world.storage.*;
  import net.minecraftforge.api.distmarker.Dist;
  import net.minecraftforge.api.distmarker.OnlyIn;
--import org.apache.commons.lang3.Validate;
--import org.apache.logging.log4j.LogManager;
--import org.apache.logging.log4j.Logger;
 +import net.minecraftforge.common.MinecraftForge;
+ import org.apache.commons.lang3.Validate;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
++import org.bukkit.Bukkit;
++import org.bukkit.craftbukkit.v1_16_R3.CraftServer;
++import org.bukkit.event.server.ServerLoadEvent;
++import org.bukkit.event.world.WorldInitEvent;
++import org.bukkit.event.world.WorldLoadEvent;
++import org.spigotmc.SlackActivityAccountant;
++
++import javax.annotation.Nullable;
++import javax.imageio.ImageIO;
++import java.awt.image.BufferedImage;
++import java.io.File;
++import java.io.IOException;
++import java.io.UnsupportedEncodingException;
++import java.io.Writer;
++import java.lang.management.ManagementFactory;
++import java.lang.management.ThreadInfo;
++import java.lang.management.ThreadMXBean;
++import java.net.Proxy;
++import java.net.URLEncoder;
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.security.KeyPair;
++import java.text.SimpleDateFormat;
++import java.util.*;
++import java.util.Map.Entry;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.Executor;
++import java.util.concurrent.atomic.AtomicReference;
++import java.util.function.BooleanSupplier;
++import java.util.function.Function;
  
  public abstract class MinecraftServer extends RecursiveEventLoop<TickDelayedTask> implements ISnooperInfo, ICommandSource, AutoCloseable {
 -   private static final Logger field_147145_h = LogManager.getLogger();
@@ -362,7 +448,7 @@
 +    public static OptionSet options;
 +    public org.bukkit.command.ConsoleCommandSender console;
 +    public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
-+    public static int currentTick = (int) (System.currentTimeMillis() / 50);
++    public static int currentTick = 0; // Paper - Further improve tick loop
 +    public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
 +    public int autosavePeriod;
 +    public boolean serverAutoSave = false; // Paper
@@ -372,7 +458,7 @@
 +    // Spigot start
 +    public static final int TPS = 20;
 +    public static final int TICK_TIME = 1000000000 / TPS;
-+    private static final int SAMPLE_INTERVAL = 100;
++    private static final int SAMPLE_INTERVAL = 20; // Paper
 +    public final double[] recentTps = new double[3];
 +    public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
 +    // Spigot end
@@ -1105,6 +1191,59 @@
 +    }
 +    // Spigot End
 +
++    // Paper start - Further improve server tick loop
++    private static final long SEC_IN_NANO = 1000000000;
++    private static final long MAX_CATCHUP_BUFFER = TICK_TIME * TPS * 60L;
++    private long lastTick = 0;
++    private long catchupTime = 0;
++    public final RollingAverage tps1 = new RollingAverage(60);
++    public final RollingAverage tps5 = new RollingAverage(60 * 5);
++    public final RollingAverage tps15 = new RollingAverage(60 * 15);
++
++    public static class RollingAverage {
++        private final int size;
++        private long time;
++        private java.math.BigDecimal total;
++        private int index = 0;
++        private final java.math.BigDecimal[] samples;
++        private final long[] times;
++
++        RollingAverage(int size) {
++            this.size = size;
++            this.time = size * SEC_IN_NANO;
++            this.total = dec(TPS).multiply(dec(SEC_IN_NANO)).multiply(dec(size));
++            this.samples = new java.math.BigDecimal[size];
++            this.times = new long[size];
++            for (int i = 0; i < size; i++) {
++                this.samples[i] = dec(TPS);
++                this.times[i] = SEC_IN_NANO;
++            }
++        }
++
++        private static java.math.BigDecimal dec(long t) {
++            return new java.math.BigDecimal(t);
++        }
++
++        public void add(java.math.BigDecimal x, long t) {
++            time -= times[index];
++            total = total.subtract(samples[index].multiply(dec(times[index])));
++            samples[index] = x;
++            times[index] = t;
++            time += t;
++            total = total.add(x.multiply(dec(t)));
++            if (++index == size) {
++                index = 0;
++            }
++        }
++
++        public double getAverage() {
++            return total.divide(dec(time), 30, java.math.RoundingMode.HALF_UP).doubleValue();
++        }
++    }
++
++    private static final java.math.BigDecimal TPS_BASE = new java.math.BigDecimal(1E9).multiply(new java.math.BigDecimal(SAMPLE_INTERVAL));
++    // Paper End
++
 +    protected void func_240802_v_() {
 +
 +        try {
@@ -1118,9 +1257,10 @@
 +                // Spigot start
 +                org.spigotmc.WatchdogThread.hasStarted = true; // Paper
 +                Arrays.fill(recentTps, 20);
-+                long curTime, tickSection = Util.func_211177_b(), tickCount = 1;
++                long start = System.nanoTime(), curTime, tickSection = start; // Paper - Further improve server tick loop
++                lastTick = start - TICK_TIME; // Paper
 +                while (this.field_71317_u) {
-+                    long i = (curTime = Util.func_211177_b()) - this.field_211151_aa;
++                    long i = ((curTime = System.nanoTime()) / (1000L * 1000L)) - this.field_211151_aa; // Paper
 +
 +                    if (i > 5000L && this.field_211151_aa - this.field_71299_R >= 30000L) {  // CraftBukkit
 +                        long j = i / 50L;
@@ -1131,16 +1271,23 @@
 +                        this.field_71299_R = this.field_211151_aa;
 +                    }
 +
-+                    if (tickCount++ % SAMPLE_INTERVAL == 0) {
-+                        double currentTps = 1E3 / (curTime - tickSection) * SAMPLE_INTERVAL;
-+                        recentTps[0] = calcTps(recentTps[0], 0.92, currentTps); // 1/exp(5sec/1min)
-+                        recentTps[1] = calcTps(recentTps[1], 0.9835, currentTps); // 1/exp(5sec/5min)
-+                        recentTps[2] = calcTps(recentTps[2], 0.9945, currentTps); // 1/exp(5sec/15min)
++                    if (++MinecraftServer.currentTick % MinecraftServer.SAMPLE_INTERVAL == 0) {
++                        final long diff = curTime - tickSection;
++                        java.math.BigDecimal currentTps = TPS_BASE.divide(new java.math.BigDecimal(diff), 30, java.math.RoundingMode.HALF_UP);
++                        tps1.add(currentTps, diff);
++                        tps5.add(currentTps, diff);
++                        tps15.add(currentTps, diff);
++                        // Backwards compat with bad plugins
++                        this.recentTps[0] = tps1.getAverage();
++                        this.recentTps[1] = tps5.getAverage();
++                        this.recentTps[2] = tps15.getAverage();
++                        // Paper end
 +                        tickSection = curTime;
 +                    }
 +                    // Spigot end
 +
-+                    currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit
++                    currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit // Paper - don't overwrite current tick time
++                    lastTick = curTime;
 +                    this.field_211151_aa += 50L;
 +                    LongTickDetector longtickdetector = LongTickDetector.func_233524_a_("Server");
 +                    this.func_240773_a_(longtickdetector);
@@ -1162,7 +1309,8 @@
 +                net.minecraftforge.fml.server.ServerLifecycleHooks.expectServerStopped(); // has to come before finalTick to avoid race conditions
 +                this.func_71228_a((CrashReport) null);
 +            }
-+        } catch (Throwable throwable1) {
++        } catch (
++                Throwable throwable1) {
 +            field_147145_h.error(com.mohistmc.util.i18n.i18n.get("minecraftserver.15", throwable1));
 +            // Spigot Start
 +            if (throwable1.getCause() != null) {
